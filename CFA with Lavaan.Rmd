@@ -1,0 +1,68 @@
+---
+title: "CFA with Lavaan"
+author: "Fabio Paderi"
+date: "9/7/2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+## Confirmatory Factor Analysis con Lavaan
+library(lavaan)
+```
+```{r}
+library(semPlot)
+data("HolzingerSwineford1939")
+dat <- HolzingerSwineford1939
+head(dat)
+# le misure da x1 a x9 sono misure di diversi fattori di intelligenza  
+# 1 2 3 misurano un fattore, 4 5 6 ne misurano un altro mentre 7 8 9 un altro ancora
+
+# come prima cosa dobbiamo esplorare i dati e specificare il modello
+
+model1 <- 'Visual =~ x1 + x2 + x3' # la notazione =~ serve ad indicare che 
+# le tre variabili misurano un costrutto latente
+
+# ora con la funzione cfa stimerò i parametri del modello
+
+fit1 <- cfa(model1, data = dat)
+
+# vediamo i risultati; Lavaan attribuisce 1 automaticamente ad un indicatore
+# per individuare la scala
+
+summary(fit1, standardized = TRUE, fit.measures = TRUE, rsq = TRUE)
+
+
+# adesso specifichiamo un modello più complesso
+
+model2 <- ' Visual =~ x1 + x2 + x3
+            Textual =~ x4 + x5 + x6
+            Speed =~ x7 + x8 + x9'
+
+fit2 <- cfa(model2, data = dat)
+summary(fit2, standardized = TRUE, fit.measures = TRUE, rsq = TRUE)
+# di default lavaan stima anche la covarianza tra i fattori latenti
+
+# se si vuole scegliere un'altra variabile per scalare la variabile latente
+# o se si vogliono inserire dei costrains bisogna procedere in questo modo
+
+model3 <- ' Visual =~ NA*x1 + 1*x2 + x3' # in questo modo il costrain verrà 
+# inserito su x2 e non su x1
+
+fit3 <- cfa(model3, data = dat)
+summary(fit3, standardized = TRUE, fit.measures = TRUE, rsq = TRUE)
+semPaths(fit3, nCharNodes = "0")
+
+# è possibile fissare il costrain sulla varianza della variabile latente inserendo l'argom
+#ento std.lv all'interno della funzione 
+
+model4 <- ' Visual =~ x1 + x2 + x3'
+fit4 <- cfa(model4, data = dat, std.lv = TRUE)
+summary(fit4, standardized = TRUE, fit.measures = TRUE, rsq = TRUE)
+semPaths(fit2)
+```
